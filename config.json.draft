@@ -1,28 +1,35 @@
 {
-  "Login": {
-    "Url": "/path/to/auth",
-    "Fields": {
-      "Username": ["usernameFieldName", "username"],
-      "Password": ["passwordFieldName", "password"]
-    }
-  },
-
-  "Report": "Reports.csv",
-  "Results": "Results.csv",
-
-  "Days": [4],
-  "Timeout": 900,
-
-  "SkipNoDays": true,
-
-  "Domain": "domain.com",
-  "WithCore": false,
-
-  "Tokens": {
-    "DateFrom": "~@DateFrom@~",
-    "DateTo": "~@DateTo@~"
-  },
-
-  "Workers": 1,
-  "Limit": -1
+    "Url": {
+        "Schema": "http",
+        "Domain": "domain.com"
+    },
+    "Login": {
+        "Path": "/path/to/auth",
+        "Fields": {
+            "Username": [
+                "usernameFieldName",
+                "username"
+            ],
+            "Password": [
+                "passwordFieldName",
+                "password"
+            ]
+        }
+    },
+    "Report": "/path/to/csv/input/file",
+    "Results": "/path/to/csv/output/file",
+    "Days": [
+        4
+    ],
+    "Timeout": 900,
+    "Skip": {
+        "NoDays": true,
+        "Core": true
+    },
+    "Tokens": {
+        "DateFrom": "~@DateFrom@~",
+        "DateTo": "~@DateTo@~"
+    },
+    "Workers": 1,
+    "Limit": -1
 }

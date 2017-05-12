@@ -29,9 +29,9 @@ var configParameters configJson
 var rows [][]string
 
 func main() {
-	// Login to ruby
-	log.Println("Start...")
+	log.Println("Start!")
 
+	log.Println("Loading config...")
 	bootstrap()
 
 	log.Println("Login...")
@@ -39,6 +39,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	log.Println("Reading input file...")
 	file, err := os.Open(configParameters.Report)
 	if err != nil {
 		fmt.Println("Error opening report file:", err)
@@ -46,6 +47,7 @@ func main() {
 	}
 	defer file.Close()
 
+	log.Println("Creating output file...")
 	csvFile, err := os.Create(configParameters.Results)
 	if err != nil {
 		log.Fatalf("Error creating results file (err: %s)", err)
@@ -123,11 +125,11 @@ func login() error {
 	jar, err := cookiejar.New(&options)
 	if nil == err {
 		client = http.Client{Jar: jar}
-		_, err = client.PostForm(configParameters.Login.Url, url.Values{
-			configParameters.Login.Fields.getUsernameField(): {
-				configParameters.Login.Fields.getUsernameValue()},
-			configParameters.Login.Fields.getPasswordField(): {
-				configParameters.Login.Fields.getPasswordValue()},
+		_, err = client.PostForm(configParameters.Url.Login.Path, url.Values{
+			configParameters.getUsernameField(): {
+				configParameters.getUsernameValue()},
+			configParameters.getPasswordField(): {
+				configParameters.getPasswordValue()},
 		})
 	}
 
@@ -137,7 +139,7 @@ func login() error {
 func evaluateUrlSkip(u string) bool {
 	skip := "" == u
 
-	if !skip && !configParameters.WithSafiro {
+	if !skip && !configParameters.skipCore() {
 		parsed, err := url.Parse(u)
 		if err != nil {
 			log.Fatalf("Error parsing URL: %s (err: %s)", u, err)

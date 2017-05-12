@@ -2,22 +2,8 @@ package main
 
 const jsonFileName = "config.json"
 
-type loginFields struct {
-	Username []string
-	Password []string
-}
-
-type loginParameters struct {
-	Url    string
-	Fields loginFields
-}
-
-type tokens struct {
-	DateFrom string
-	DateTo   string
-}
-
 type configJson struct {
+	Url   urlParameters
 	Login loginParameters
 
 	Report  string
@@ -26,10 +12,7 @@ type configJson struct {
 	Days    []int
 	Timeout int
 
-	SkipNoDays bool
-
-	Domain     string
-	WithSafiro bool
+	Skip skipParameters
 
 	Tokens tokens
 
@@ -37,18 +20,56 @@ type configJson struct {
 	Limit   int
 }
 
-func (f loginFields) getUsernameField() string {
-	return f.Username[0]
+type urlParameters struct {
+	Schema string
+	Domain string
+	Login  loginParameters
 }
 
-func (f loginFields) getUsernameValue() string {
-	return f.Username[1]
+type loginParameters struct {
+	Path   string
+	Fields loginFieldsParameters
 }
 
-func (f loginFields) getPasswordField() string {
-	return f.Password[0]
+type loginFieldsParameters struct {
+	Username []string
+	Password []string
 }
 
-func (f loginFields) getPasswordValue() string {
-	return f.Password[1]
+type tokens struct {
+	DateFrom string
+	DateTo   string
+}
+
+type skipParameters struct {
+	NoDays bool
+	Core   bool
+}
+
+func (c configJson) getLoginPath() string {
+	return c.Login.Path
+}
+
+func (c configJson) getUsernameField() string {
+	return c.Login.Fields.Username[0]
+}
+
+func (c configJson) getUsernameValue() string {
+	return c.Login.Fields.Username[1]
+}
+
+func (c configJson) getPasswordField() string {
+	return c.Login.Fields.Password[0]
+}
+
+func (c configJson) getPasswordValue() string {
+	return c.Login.Fields.Password[1]
+}
+
+func (c configJson) skipNoDays() bool {
+	return c.Skip.NoDays
+}
+
+func (c configJson) skipCore() bool {
+	return c.Skip.Core
 }
