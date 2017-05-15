@@ -4,6 +4,7 @@
         "Domain": "domain.com"
     },
     "Login": {
+        "Enabled": false,
         "Path": "/path/to/auth",
         "Fields": {
             "Username": [

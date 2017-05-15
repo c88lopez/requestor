@@ -20,8 +20,12 @@ import (
 
 	"strings"
 
+	"errors"
+
 	"golang.org/x/net/publicsuffix"
 )
+
+const coreDomain = "safiro.jampp.com"
 
 var wg sync.WaitGroup
 var client http.Client
@@ -80,13 +84,15 @@ func main() {
 			record[0] = section
 		}
 
-		if evaluateUrlSkip(record[1]) || "Section" == section {
+		fullUrl, err := buildFullUrl(record[1])
+		if nil != err || evaluateUrlSkip(fullUrl) || "Section" == section {
 			continue
 		}
 
+		fmt.Printf("Working on %s\n", fullUrl)
 		if "Endpoint" != record[1] && "" != record[1] {
 			configParameters.Limit--
-			urls <- record
+			urls <- []string{record[0], fullUrl}
 		}
 	}
 
@@ -118,22 +124,40 @@ func bootstrap() {
 func login() error {
 	var err error
 
-	options := cookiejar.Options{
-		PublicSuffixList: publicsuffix.List,
-	}
+	if configParameters.Login.Enabled {
+		options := cookiejar.Options{
+			PublicSuffixList: publicsuffix.List,
+		}
 
-	jar, err := cookiejar.New(&options)
-	if nil == err {
-		client = http.Client{Jar: jar}
-		_, err = client.PostForm(configParameters.Url.Login.Path, url.Values{
-			configParameters.getUsernameField(): {
-				configParameters.getUsernameValue()},
-			configParameters.getPasswordField(): {
-				configParameters.getPasswordValue()},
-		})
+		jar, err := cookiejar.New(&options)
+		if nil == err {
+			client = http.Client{Jar: jar}
+			_, err = client.PostForm(configParameters.Url.Login.Path, url.Values{
+				configParameters.getUsernameField(): {
+					configParameters.getUsernameValue()},
+				configParameters.getPasswordField(): {
+					configParameters.getPasswordValue()},
+			})
+		}
+	} else {
+		client = http.Client{}
 	}
 
 	return err
+}
+
+func buildFullUrl(pathUrl string) (string, error) {
+	if "Endpoint" == pathUrl {
+		return "", errors.New("Header")
+	}
+
+	u := url.URL{}
+
+	u.Scheme = configParameters.Url.Schema
+	u.Host = configParameters.Url.Domain
+	u.Path = pathUrl
+
+	return u.String(), nil
 }
 
 func evaluateUrlSkip(u string) bool {
@@ -145,7 +169,7 @@ func evaluateUrlSkip(u string) bool {
 			log.Fatalf("Error parsing URL: %s (err: %s)", u, err)
 		}
 
-		skip = !strings.Contains(parsed.Host, configParameters.Domain)
+		skip = !strings.Contains(parsed.Host, coreDomain)
 	}
 
 	return skip
@@ -196,7 +220,7 @@ func worker(url <-chan []string) {
 		if hasTokens(u[1]) {
 			dayRanges = configParameters.Days
 		} else {
-			if configParameters.SkipNoDays {
+			if configParameters.skipNoDays() {
 				continue
 			}
 

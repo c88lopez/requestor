@@ -27,8 +27,10 @@ type urlParameters struct {
 }
 
 type loginParameters struct {
-	Path   string
-	Fields loginFieldsParameters
+	Enabled bool
+
+	Path    string
+	Fields  loginFieldsParameters
 }
 
 type loginFieldsParameters struct {
