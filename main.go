@@ -89,7 +89,6 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("Working on %s\n", fullUrl)
 		if "Endpoint" != record[1] && "" != record[1] {
 			configParameters.Limit--
 			urls <- []string{record[0], fullUrl}
@@ -236,6 +235,8 @@ func worker(url <-chan []string) {
 				fmt.Printf("URL: %s, Error: %s\n", u, err)
 				continue
 			}
+
+			log.Printf("Done %s, elapsed time: %s.\n", parsedUrl, elapsedTime)
 
 			rows = append(rows, []string{
 				u[0],
