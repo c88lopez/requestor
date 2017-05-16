@@ -8,21 +8,17 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"net/http"
-	"net/http/cookiejar"
 	"net/url"
 	"os"
 	"strings"
 	"sync"
 	"time"
-
-	"golang.org/x/net/publicsuffix"
 )
 
 const coreDomain = "safiro.jampp.com"
 
 var wg sync.WaitGroup
-var client http.Client
+
 var configParameters configJson
 var rows [][]string
 
@@ -31,6 +27,11 @@ func main() {
 
 	log.Println("Loading config...")
 	bootstrap()
+
+	if 0 == configParameters.Workers {
+		log.Print("No workers no love.\n")
+		os.Exit(0)
+	}
 
 	log.Println("Login...")
 	if err := login(); nil != err {
@@ -56,8 +57,8 @@ func main() {
 
 	log.Println("Generating workers...")
 	urls := make(chan []string, configParameters.Workers)
-	for i := 0; i <= configParameters.Workers; i++ {
-		go worker(urls)
+	for i := 0; i < configParameters.Workers; i++ {
+		go worker(urls, i)
 	}
 
 	rows = append(rows, []string{"Section", "Days", "Endpoint", "Duration"})
@@ -115,28 +116,7 @@ func bootstrap() {
 }
 
 func login() error {
-	var err error
-
-	if configParameters.Login.Enabled {
-		options := cookiejar.Options{
-			PublicSuffixList: publicsuffix.List,
-		}
-
-		jar, err := cookiejar.New(&options)
-		if nil == err {
-			client = http.Client{Jar: jar}
-			_, err = client.PostForm(configParameters.Url.Login.Path, url.Values{
-				configParameters.getUsernameField(): {
-					configParameters.getUsernameValue()},
-				configParameters.getPasswordField(): {
-					configParameters.getPasswordValue()},
-			})
-		}
-	} else {
-		client = http.Client{}
-	}
-
-	return err
+	return NewClient(configParameters)
 }
 
 func buildFullUrl(pathUrl string) (string, error) {
@@ -194,18 +174,10 @@ func hasTokens(url string) bool {
 }
 
 func runUrl(url string) (time.Duration, error) {
-	var err error
-
-	start := time.Now()
-	_, err = client.Get(url)
-	if nil != err {
-		return time.Since(start), err
-	}
-
-	return time.Since(start), nil
+	return rc.GetElapsedTime(url)
 }
 
-func worker(url <-chan []string) {
+func worker(url <-chan []string, worker int) {
 	wg.Add(1)
 	defer wg.Done()
 
@@ -228,14 +200,14 @@ func worker(url <-chan []string) {
 		for _, days := range dayRanges {
 			parsedUrl = replaceDateTokens(u[1], days)
 
-			log.Printf("Running %s...\n", parsedUrl)
+			log.Printf("Running %s at worker \"%d\"...\n", parsedUrl, worker+1)
 			elapsedTime, err = runUrl(parsedUrl)
 			if nil != err {
 				fmt.Printf("URL: %s, Error: %s\n", u, err)
 				continue
 			}
 
-			log.Printf("Done %s, elapsed time: %s.\n", parsedUrl, elapsedTime)
+			log.Printf("Worker \"%d\" done %s, elapsed time: %s.\n", worker+1, parsedUrl, elapsedTime)
 
 			rows = append(rows, []string{
 				u[0],
