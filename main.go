@@ -156,7 +156,12 @@ func buildFullUrl(pathUrl string) (string, error) {
 	u.Host = configParameters.Url.Domain
 	u.Path = pathUrl
 
-	return u.String(), nil
+	fullUrl, err := url.PathUnescape(u.String())
+	if nil != err {
+		return "", err
+	}
+
+	return fullUrl, nil
 }
 
 func evaluateUrlSkip(u string) bool {
