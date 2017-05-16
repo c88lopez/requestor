@@ -1,26 +1,20 @@
 package main
 
 import (
+	"encoding/csv"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"os"
+	"strings"
 	"sync"
 	"time"
-
-	"encoding/csv"
-	"os"
-
-	"io"
-
-	"io/ioutil"
-
-	"encoding/json"
-
-	"strings"
-
-	"errors"
 
 	"golang.org/x/net/publicsuffix"
 )
