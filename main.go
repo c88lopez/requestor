@@ -207,7 +207,8 @@ func worker(url <-chan []string, worker int) {
 				continue
 			}
 
-			log.Printf("Worker \"%d\" done %s, elapsed time: %s.\n", worker+1, parsedUrl, elapsedTime)
+			log.Printf("Worker \"%d\" done %s, elapsed time: %s.\n", worker+1,
+				parsedUrl, elapsedTime)
 
 			rows = append(rows, []string{
 				u[0],
