@@ -23,14 +23,13 @@ type configJson struct {
 type urlParameters struct {
 	Schema string
 	Domain string
-	Login  loginParameters
 }
 
 type loginParameters struct {
 	Enabled bool
 
-	Path    string
-	Fields  loginFieldsParameters
+	Path   string
+	Fields loginFieldsParameters
 }
 
 type loginFieldsParameters struct {
@@ -45,7 +44,7 @@ type tokens struct {
 
 type skipParameters struct {
 	NoDays bool
-	Core   bool
+	Hints  []string
 }
 
 func (c configJson) getLoginPath() string {
@@ -70,8 +69,4 @@ func (c configJson) getPasswordValue() string {
 
 func (c configJson) skipNoDays() bool {
 	return c.Skip.NoDays
-}
-
-func (c configJson) skipCore() bool {
-	return c.Skip.Core
 }

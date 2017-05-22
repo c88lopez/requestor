@@ -34,13 +34,17 @@ func NewClient(cp configJson) error {
 
 		jar, err := cookiejar.New(&options)
 		if nil == err {
-			client = http.Client{Jar: jar}
-			_, err = client.PostForm(cp.Url.Login.Path, url.Values{
-				cp.getUsernameField(): {
-					cp.getUsernameValue()},
-				cp.getPasswordField(): {
-					cp.getPasswordValue()},
-			})
+			loginUrl, err := buildFullUrl(cp.Login.Path)
+
+			if nil == err {
+				client = http.Client{Jar: jar}
+				_, err = client.PostForm(loginUrl, url.Values{
+					cp.getUsernameField(): {
+						cp.getUsernameValue()},
+					cp.getPasswordField(): {
+						cp.getPasswordValue()},
+				})
+			}
 		}
 	} else {
 		client = http.Client{}

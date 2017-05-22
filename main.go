@@ -15,8 +15,6 @@ import (
 	"time"
 )
 
-const coreDomain = "safiro.jampp.com"
-
 var wg sync.WaitGroup
 
 var configParameters configJson
@@ -138,16 +136,16 @@ func buildFullUrl(pathUrl string) (string, error) {
 	return fullUrl, nil
 }
 
-func evaluateUrlSkip(u string) bool {
-	skip := "" == u
+func evaluateUrlSkip(url string) bool {
+	skip := "" == url
 
-	if !skip && !configParameters.skipCore() {
-		parsed, err := url.Parse(u)
-		if err != nil {
-			log.Fatalf("Error parsing URL: %s (err: %s)", u, err)
+	if !skip {
+		for _, hint := range configParameters.Skip.Hints {
+			skip = strings.Contains(url, hint)
+			if skip {
+				break
+			}
 		}
-
-		skip = !strings.Contains(parsed.Host, coreDomain)
 	}
 
 	return skip
