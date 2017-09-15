@@ -79,6 +79,7 @@ func main() {
 
 		fullUrl, err := buildFullUrl(record[1])
 		if nil != err || evaluateUrlSkip(fullUrl) || "Section" == section {
+			log.Println("Skipping " + fullUrl)
 			continue
 		}
 
@@ -87,6 +88,9 @@ func main() {
 			urls <- []string{record[0], fullUrl}
 		}
 	}
+
+	// @todo Beautiful shit... replace this with a proper channer "return"
+	time.Sleep(time.Second)
 
 	close(urls)
 	wg.Wait()
@@ -189,6 +193,7 @@ func worker(url <-chan []string, worker int) {
 			dayRanges = configParameters.Days
 		} else {
 			if configParameters.skipNoDays() {
+				log.Println("Skipping no days url.")
 				continue
 			}
 
@@ -202,7 +207,6 @@ func worker(url <-chan []string, worker int) {
 			elapsedTime, err = runUrl(parsedUrl)
 			if nil != err {
 				fmt.Printf("URL: %s, Error: %s\n", u, err)
-				continue
 			}
 
 			log.Printf("Worker \"%d\" done %s, elapsed time: %s.\n", worker+1,

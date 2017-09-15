@@ -3,8 +3,9 @@ package main
 const jsonFileName = "config.json"
 
 type configJson struct {
-	Url   urlParameters
-	Login loginParameters
+	Url     urlParameters
+	Login   loginParameters
+	Headers [][]string
 
 	Report  string
 	Results string

@@ -6,6 +6,10 @@ import (
 	"net/url"
 	"time"
 
+	"io/ioutil"
+
+	"log"
+
 	"golang.org/x/net/publicsuffix"
 )
 
@@ -14,6 +18,8 @@ var rc RealClient
 
 type RealClient struct {
 	Client http.Client
+
+	Headers [][]string
 }
 
 type WebClient interface {
@@ -52,15 +58,34 @@ func NewClient(cp configJson) error {
 
 	rc.Client = client
 
+	rc.Headers = cp.Headers
+
 	return err
 }
 
 func (c *RealClient) GetElapsedTime(url string) (time.Duration, error) {
 	start := time.Now()
 
-	_, err := rc.Client.Get(url)
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return time.Since(start), err
+	}
 
-	elapsedTime := time.Since(start)
+	for _, value := range c.Headers {
+		request.Header.Set(value[0], value[1])
+	}
 
-	return elapsedTime, err
+	response, err := rc.Client.Do(request)
+	if err != nil {
+		return time.Since(start), err
+	}
+
+	responseData, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return time.Since(start), err
+	}
+
+	log.Printf("Response: %s\n", responseData)
+
+	return time.Since(start), err
 }
