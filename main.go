@@ -89,7 +89,7 @@ func main() {
 		}
 	}
 
-	// @todo Beautiful shit... replace this with a proper channer "return"
+	// @todo Beautiful shit... replace this with a proper channel "return"
 	time.Sleep(time.Second)
 
 	close(urls)
